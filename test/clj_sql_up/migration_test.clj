@@ -97,8 +97,7 @@
         (is (= 0 (count-records db-spec "aaa")))
         (is (= 0 (count-records db-spec "bbb")))
         (is (= 0 (count-records db-spec "ccc")))
-        (is (= 0 (count-records db-spec "zzz")))))
-    ))
+        (is (= 0 (count-records db-spec "zzz")))))))
 
 
 (deftest test-classpath-migrate-and-rollback
