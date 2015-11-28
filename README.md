@@ -20,6 +20,7 @@ Add database connection info (both your driver and jdbc connection string):
 
 ```clojure
 :clj-sql-up {:database "jdbc:postgresql://foo@127.0.0.1:5432/foo"
+             :migration-dir "specify/your-migrations-dir" ;;optional, defaults to "migrations"
              :deps [[org.postgresql/postgresql "9.3-1100-jdbc4"]]}
 ;; OR
 :clj-sql-up {:database {:subprotocol "mysql"

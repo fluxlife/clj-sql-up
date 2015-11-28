@@ -3,11 +3,15 @@
             [clj-sql-up.create :as c]
             [clj-sql-up.migrate :as m]
             [clj-sql-up.migration-files :as mf]
+            [leiningen.clj-sql-up :as leinup] ;)
             [clojure.java.io :as io]
             [clojure.java.jdbc :as sql]))
 
 (def db-spec {:subprotocol "hsqldb"
               :subname "mem:testdb"})
+
+(def sample-config {:migration-dir "test/clj_sql_up/my_path_to/migrations"
+                    :database db-spec})
 
 (defn- count-records [db table-name]
   (->
@@ -32,6 +36,18 @@
           (let [path (c/create ["yo"])]
             (.exists (io/as-file path))))
         (finally (delete-recursively dir))))))
+
+(deftest test-create-migration-dir-with-lein
+  (testing "create with lein and migration-dir config"
+    (try
+      (leinup/clj-sql-up sample-config "create" "yo")
+      (.exists (io/as-file (str mf/*migration-dir*)))
+      (finally (delete-recursively mf/*migration-dir*))))
+  (testing "create with lein but without migration-dir config"
+    (try
+      (leinup/clj-sql-up {:database db-spec} "create" "yo")
+      (.exists (io/as-file (str mf/*migration-dir*)))
+      (finally (delete-recursively mf/*migration-dir*)))))
 
 (deftest test-migrate-and-rollback
 
@@ -82,7 +98,7 @@
         (is (= 0 (count-records db-spec "bbb")))
         (is (= 0 (count-records db-spec "ccc")))
         (is (= 0 (count-records db-spec "zzz")))))
-  ))
+    ))
 
 
 (deftest test-classpath-migrate-and-rollback
