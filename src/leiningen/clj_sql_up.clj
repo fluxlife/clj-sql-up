@@ -1,7 +1,8 @@
 (ns leiningen.clj-sql-up
   (:require [cemerick.pomegranate :as pome]
-            [clj-sql-up.create  :as create]
-            [clj-sql-up.migrate :as migrate]))
+            [clj-sql-up.create :as create]
+            [clj-sql-up.migrate :as migrate]
+            [clj-sql-up.migration-files :as mf]))
 
 (defn get-database
   "fetch database connection info given project.clj options hash"
@@ -13,7 +14,7 @@
 (defn get-migration-dir
   "fetch migration-dir config option in project.clj options hash"
   [opts]
-  (or (:migration-dir opts) "migrations"))
+  (or (:migration-dir opts) mf/*migration-dir*))
 
 (defn clj-sql-up
   "Simply manage sql migrations with clojure/jdbc
@@ -27,13 +28,13 @@ rollback n       Rollback last n migrations (n defaults to 1)"
   ([project command & args]
    (let [opts (:clj-sql-up project)
          db   (get-database opts)
-         migration-dir (get-migration-dir opts)
+         migration-dir (get-migration-dir project)
          repos (merge {"central" "http://repo1.maven.org/maven2/"}
                       {"clojars" "http://clojars.org/repo"}
                       (:repos opts))]
      (pome/add-dependencies :coordinates (:deps opts)
                             :repositories repos)
-     (binding [clj-sql-up.migration-files/*migration-dir* migration-dir]
+     (binding [mf/*migration-dir* migration-dir]
        (cond
          (= command "create")   (create/create args)
          (= command "migrate")  (migrate/migrate db)

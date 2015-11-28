@@ -20,7 +20,7 @@
     path))
 
 (defn create-migration-dir []
-  (.mkdir (java.io.File. *migration-dir*)))
+  (.mkdirs (java.io.File. *migration-dir*)))
 
 (defn create [args]
   (create-migration-dir)

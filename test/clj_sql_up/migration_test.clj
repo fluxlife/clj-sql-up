@@ -10,9 +10,6 @@
 (def db-spec {:subprotocol "hsqldb"
               :subname "mem:testdb"})
 
-(def sample-config {:migration-dir "test/clj_sql_up/my_path_to/migrations"
-                    :database db-spec})
-
 (defn- count-records [db table-name]
   (->
     (sql/query db-spec [(str "select count(*) from " table-name)])
@@ -39,15 +36,20 @@
 
 (deftest test-create-migration-dir-with-lein
   (testing "create with lein and migration-dir config"
-    (try
-      (leinup/clj-sql-up sample-config "create" "yo")
-      (.exists (io/as-file (str mf/*migration-dir*)))
-      (finally (delete-recursively mf/*migration-dir*))))
+    (let [config-migration-dir "./test/clj_sql_up/my_path_to/migrations"
+          config {:migration-dir config-migration-dir :database db-spec}]
+      (try
+        (leinup/clj-sql-up config "create" "yo")
+        (.isDirectory (io/file config-migration-dir))
+        (finally (delete-recursively config-migration-dir)))))
+
   (testing "create with lein but without migration-dir config"
-    (try
-      (leinup/clj-sql-up {:database db-spec} "create" "yo")
-      (.exists (io/as-file (str mf/*migration-dir*)))
-      (finally (delete-recursively mf/*migration-dir*)))))
+    (let [default-migration-dir "migrations"]
+      (try
+        (leinup/clj-sql-up {:database db-spec} "create" "yo")
+        (is (= default-migration-dir mf/*migration-dir*))
+        (.exists (io/as-file default-migration-dir))
+        (finally (delete-recursively mf/*migration-dir*))))))
 
 (deftest test-migrate-and-rollback
 
